@@ -1,6 +1,6 @@
 {
-  "name": "circleci-docker",
-  "version": "1.0.0",
+  "name": "@ftw/circleci-docker",
+  "version": "0.0.1",
   "main": "lib/index.js",
   "bin": "lib/index.js",
   "files": [
@@ -9,7 +9,9 @@
   "author": "Dan Martens <dan@friendsoftheweb.com>",
   "license": "MIT",
   "scripts": {
-    "build": "scripts/build"
+    "build": "scripts/build",
+    "prepack": "scripts/prepack",
+    "types:check": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/node": "^13.1.1",

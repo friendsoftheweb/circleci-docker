@@ -2,12 +2,14 @@
 
 import chalk from 'chalk';
 
+import getPackageVersion from './util/getPackageVersion';
 import getNodeVersion from './util/getNodeVersion';
 import getPythonVersion from './util/getPythonVersion';
 import getRubyVersion from './util/getRubyVersion';
 
 import CompositeImage from './CompositeImage';
 
+const packageVersion = getPackageVersion();
 const nodeVersion = getNodeVersion();
 const pythonVersion = getPythonVersion();
 const rubyVersion = getRubyVersion();
@@ -28,7 +30,7 @@ if (rubyVersion != null) {
 
 console.log('\nBuilding the Docker images could take up to 30 minutes.\n');
 
-new CompositeImage({
+new CompositeImage(packageVersion, {
   nodeVersion,
   pythonVersion,
   rubyVersion

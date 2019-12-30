@@ -8,13 +8,17 @@ import run from './util/run';
 import DependencyImage from './DependencyImage';
 
 export default class CompositeImage {
+  readonly version: string;
   readonly images: DependencyImage[];
 
-  constructor(options: {
-    nodeVersion?: string | null;
-    pythonVersion?: string | null;
-    rubyVersion?: string | null;
-  }) {
+  constructor(
+    version: string,
+    options: {
+      nodeVersion?: string | null;
+      pythonVersion?: string | null;
+      rubyVersion?: string | null;
+    }
+  ) {
     const images: DependencyImage[] = [];
     let index = 0;
 
@@ -48,17 +52,21 @@ export default class CompositeImage {
       );
     }
 
+    this.version = version;
     this.images = images;
   }
 
-  get imageName() {
+  get name() {
     const parts: string[] = this.images.map((image) => image.name);
 
     return `${IMAGE_NAME_PREFIX}-${parts.join('-')}`;
   }
 
-  get imageTag() {
-    const parts: string[] = this.images.map((image) => image.tag);
+  get tag() {
+    const parts: string[] = [
+      this.version,
+      ...this.images.map((image) => image.tag)
+    ];
 
     return parts.join('-');
   }
@@ -106,9 +114,7 @@ export default class CompositeImage {
       }
     }
 
-    const imageName = `${IMAGE_NAME_PREFIX}-${this.images
-      .map((image) => image.name)
-      .join('-')}:${this.images.map((image) => image.tag).join('-')}`;
+    const imageNameAndTag = `${this.name}:${this.tag}`;
 
     const dockerBuildArgs = this.images
       .map((image) => image.dockerBuildArg)
@@ -117,11 +123,11 @@ export default class CompositeImage {
     spinner.start(`Building composite image...`);
 
     try {
-      await run(`docker build -t ${imageName} ${dockerBuildArgs} -`, {
+      await run(`docker build -t ${imageNameAndTag} ${dockerBuildArgs} -`, {
         stdin: this.toDockerfileString()
       });
 
-      await run(`docker push ${imageName}`);
+      await run(`docker push ${imageNameAndTag}`);
 
       spinner.succeed('Built composite image');
     } catch (error) {
@@ -134,7 +140,7 @@ export default class CompositeImage {
 
     console.log(
       `\nPlease update your project's CircleCI configuration to use ${chalk.cyan(
-        imageName
+        imageNameAndTag
       )}\n`
     );
   }
