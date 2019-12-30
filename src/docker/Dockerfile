@@ -1,11 +1,3 @@
-ARG node_version
-ARG python_version
-ARG ruby_version
-
-FROM friendsoftheweb/test-node:$node_version
-FROM friendsoftheweb/test-python:$python_version
-FROM friendsoftheweb/test-ruby:$ruby_version
-
 # Make Apt non-interactive
 RUN echo 'APT::Get::Assume-Yes "true";' > /etc/apt/apt.conf.d/90circleci \
     && echo 'DPkg::Options "--force-confnew";' >> /etc/apt/apt.conf.d/90circleci
