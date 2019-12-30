@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+set -ex
+
+rm -rf lib
+
+tsc
+
+chmod +x lib/index.js
+
+mkdir lib/docker
+cp -r src/docker lib

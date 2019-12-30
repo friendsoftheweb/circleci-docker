@@ -1,0 +1,18 @@
+{
+  "name": "circleci-docker",
+  "version": "1.0.0",
+  "main": "lib/index.js",
+  "bin": "lib/index.js",
+  "files": [
+    "lib"
+  ],
+  "author": "Dan Martens <dan@friendsoftheweb.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "scripts/build"
+  },
+  "devDependencies": {
+    "@types/node": "^13.1.1",
+    "typescript": "^3.7.4"
+  }
+}
