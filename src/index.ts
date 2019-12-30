@@ -40,7 +40,7 @@ async function buildImage() {
     console.log(`Ruby: ${chalk.cyan(rubyVersion)}`);
   }
 
-  console.log();
+  console.log('\nBuilding the Docker images could take up to 30 minutes.\n');
 
   if (nodeVersion != null) {
     imageNameParts.push('node');
@@ -60,7 +60,9 @@ async function buildImage() {
     } catch (error) {
       spinner.fail();
 
-      throw error;
+      console.log(`\n${error.message}`);
+
+      return;
     }
   }
 
@@ -82,7 +84,9 @@ async function buildImage() {
     } catch (error) {
       spinner.fail();
 
-      throw error;
+      console.log(`\n${error.message}`);
+
+      return;
     }
   }
 
@@ -104,7 +108,9 @@ async function buildImage() {
     } catch (error) {
       spinner.fail();
 
-      throw error;
+      console.log(`\n${error.message}`);
+
+      return;
     }
   }
 
@@ -132,13 +138,15 @@ async function buildImage() {
   } catch (error) {
     spinner.fail();
 
-    throw error;
+    console.log(`\n${error.message}`);
+
+    return;
   }
 
   console.log(
-    `\nPlease update ${chalk.cyan('.circleci/config.yml')} to use ${chalk.cyan(
+    `\nPlease update your project's CircleCI configuration to use ${chalk.cyan(
       imageName
-    )}`
+    )}\n`
   );
 }
 
