@@ -2,9 +2,10 @@
 
 import path from 'path';
 import { readFileSync } from 'fs';
-import { exec } from 'child_process';
 import chalk from 'chalk';
+import ora from 'ora';
 
+import run from './util/run';
 import getNodeVersion from './getNodeVersion';
 import getPythonVersion from './getPythonVersion';
 import getRubyVersion from './getRubyVersion';
@@ -13,6 +14,8 @@ import buildPythonImage from './buildPythonImage';
 import buildRubyImage from './buildRubyImage';
 
 async function buildImage() {
+  const spinner = ora();
+
   const imageNameParts: string[] = [];
   const imageTagParts: string[] = [];
   const dockerfileArgStatements: string[] = [];
@@ -20,6 +23,24 @@ async function buildImage() {
   const dockerBuildArguments: string[] = [];
 
   const nodeVersion = getNodeVersion();
+  const pythonVersion = getPythonVersion();
+  const rubyVersion = getRubyVersion();
+
+  console.log('Detected the following versions:\n');
+
+  if (nodeVersion != null) {
+    console.log(`Node: ${chalk.cyan(nodeVersion)}`);
+  }
+
+  if (pythonVersion != null) {
+    console.log(`Python: ${chalk.cyan(pythonVersion)}`);
+  }
+
+  if (rubyVersion != null) {
+    console.log(`Ruby: ${chalk.cyan(rubyVersion)}`);
+  }
+
+  console.log();
 
   if (nodeVersion != null) {
     imageNameParts.push('node');
@@ -30,10 +51,18 @@ async function buildImage() {
     );
     dockerBuildArguments.push(`--build-arg node_version=${nodeVersion}`);
 
-    await buildNodeImage(nodeVersion);
-  }
+    spinner.start('Building Node image...');
 
-  const pythonVersion = getPythonVersion();
+    try {
+      await buildNodeImage(nodeVersion);
+
+      spinner.succeed('Built Node image');
+    } catch (error) {
+      spinner.fail();
+
+      throw error;
+    }
+  }
 
   if (pythonVersion != null) {
     imageNameParts.push('python');
@@ -44,10 +73,18 @@ async function buildImage() {
     );
     dockerBuildArguments.push(`--build-arg python_version=${pythonVersion}`);
 
-    await buildPythonImage(pythonVersion);
-  }
+    spinner.start('Building Python image...');
 
-  const rubyVersion = getRubyVersion();
+    try {
+      await buildPythonImage(pythonVersion);
+
+      spinner.succeed('Built Python image');
+    } catch (error) {
+      spinner.fail();
+
+      throw error;
+    }
+  }
 
   if (rubyVersion != null) {
     imageNameParts.push('ruby');
@@ -58,7 +95,17 @@ async function buildImage() {
     );
     dockerBuildArguments.push(`--build-arg ruby_version=${rubyVersion}`);
 
-    await buildRubyImage(rubyVersion);
+    spinner.start('Building Ruby image...');
+
+    try {
+      await buildRubyImage(rubyVersion);
+
+      spinner.succeed('Built Ruby image');
+    } catch (error) {
+      spinner.fail();
+
+      throw error;
+    }
   }
 
   const imageName = `circleci-${imageNameParts.join('-')}:${imageTagParts.join(
@@ -73,27 +120,26 @@ async function buildImage() {
     dockerfilePath
   )}`;
 
-  return new Promise((resolve, reject) => {
-    const dockerBuild = exec(
+  spinner.start('Building composite image...');
+
+  try {
+    await run(
       `docker build -t ${imageName} ${dockerBuildArguments.join(' ')} -`,
-      (error) => {
-        if (error != null) {
-          reject(error);
-        } else {
-          resolve();
-        }
-      }
+      { stdin: dockerFileContent }
     );
 
-    dockerBuild.stdout?.pipe(process.stdout);
+    spinner.succeed('Built composite image');
+  } catch (error) {
+    spinner.fail();
 
-    dockerBuild.stdin?.write(dockerFileContent);
-    dockerBuild.stdin?.end();
-  });
+    throw error;
+  }
+
+  console.log(
+    `\nPlease update ${chalk.cyan('.circleci/config.yml')} to use ${chalk.cyan(
+      imageName
+    )}`
+  );
 }
-
-console.log(`Ruby Version: ${chalk.cyan(getRubyVersion())}`);
-console.log(`Node Version: ${chalk.cyan(getNodeVersion())}`);
-console.log(`Python Version: ${chalk.cyan(getPythonVersion())}`);
 
 buildImage();
