@@ -3,12 +3,20 @@ import path from 'path';
 import { IMAGE_NAME_PREFIX, IMAGE_BIN_PATHS } from './constants';
 import run from './util/run';
 
+interface Options {
+  index: number;
+  name: string;
+  tag: string;
+  verbose?: boolean;
+}
+
 export default class DependencyImage {
   readonly index: number;
   readonly name: string;
   readonly tag: string;
+  readonly verbose: boolean;
 
-  constructor(options: { index: number; name: string; tag: string }) {
+  constructor(options: Options) {
     if (/[^a-z]/.test(options.name)) {
       throw new Error(`Invalid dependency image name: ${options.name}`);
     }
@@ -20,6 +28,7 @@ export default class DependencyImage {
     this.index = options.index;
     this.name = options.name;
     this.tag = options.tag;
+    this.verbose = Boolean(options.verbose);
   }
 
   get dockerfileFromStatement() {
@@ -45,9 +54,10 @@ export default class DependencyImage {
     );
 
     await run(
-      `docker build -t ${imageName} ${this.dockerBuildArg} ${dockerfileDirectoryPath}`
+      `docker build -t ${imageName} ${this.dockerBuildArg} ${dockerfileDirectoryPath}`,
+      { verbose: this.verbose }
     );
 
-    await run(`docker push ${imageName}`);
+    await run(`docker push ${imageName}`, { verbose: this.verbose });
   }
 }

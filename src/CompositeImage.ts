@@ -7,18 +7,20 @@ import { IMAGE_NAME_PREFIX } from './constants';
 import run from './util/run';
 import DependencyImage from './DependencyImage';
 
+interface Options {
+  version: string;
+  nodeVersion?: string | null;
+  pythonVersion?: string | null;
+  rubyVersion?: string | null;
+  verbose?: boolean;
+}
+
 export default class CompositeImage {
   readonly version: string;
+  readonly verbose: boolean;
   readonly images: DependencyImage[];
 
-  constructor(
-    version: string,
-    options: {
-      nodeVersion?: string | null;
-      pythonVersion?: string | null;
-      rubyVersion?: string | null;
-    }
-  ) {
+  constructor(options: Options) {
     const images: DependencyImage[] = [];
     let index = 0;
 
@@ -27,7 +29,8 @@ export default class CompositeImage {
         new DependencyImage({
           index: index++,
           name: 'node',
-          tag: options.nodeVersion
+          tag: options.nodeVersion,
+          verbose: options.verbose
         })
       );
     }
@@ -37,7 +40,8 @@ export default class CompositeImage {
         new DependencyImage({
           index: index++,
           name: 'python',
-          tag: options.pythonVersion
+          tag: options.pythonVersion,
+          verbose: options.verbose
         })
       );
     }
@@ -47,12 +51,14 @@ export default class CompositeImage {
         new DependencyImage({
           index: index++,
           name: 'ruby',
-          tag: options.rubyVersion
+          tag: options.rubyVersion,
+          verbose: options.verbose
         })
       );
     }
 
-    this.version = version;
+    this.version = options.version;
+    this.verbose = Boolean(options.verbose);
     this.images = images;
   }
 
@@ -99,14 +105,20 @@ export default class CompositeImage {
     const spinner = ora();
 
     for (const image of this.images) {
-      spinner.start(`Building ${image.name} image...`);
+      if (!this.verbose) {
+        spinner.start(`Building ${image.name} image...`);
+      }
 
       try {
         await image.build();
 
-        spinner.succeed(`Built ${image.name} image`);
+        if (!this.verbose) {
+          spinner.succeed(`Built ${image.name} image`);
+        }
       } catch (error) {
-        spinner.fail();
+        if (!this.verbose) {
+          spinner.fail();
+        }
 
         console.log(`\n${error.message}`);
 
@@ -120,18 +132,25 @@ export default class CompositeImage {
       .map((image) => image.dockerBuildArg)
       .join(' ');
 
-    spinner.start(`Building composite image...`);
+    if (!this.verbose) {
+      spinner.start(`Building composite image...`);
+    }
 
     try {
       await run(`docker build -t ${imageNameAndTag} ${dockerBuildArgs} -`, {
-        stdin: this.toDockerfileString()
+        stdin: this.toDockerfileString(),
+        verbose: this.verbose
       });
 
-      await run(`docker push ${imageNameAndTag}`);
+      await run(`docker push ${imageNameAndTag}`, { verbose: this.verbose });
 
-      spinner.succeed('Built composite image');
+      if (!this.verbose) {
+        spinner.succeed('Built composite image');
+      }
     } catch (error) {
-      spinner.fail();
+      if (!this.verbose) {
+        spinner.fail();
+      }
 
       console.log(`\n${error.message}`);
 

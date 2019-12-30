@@ -2,6 +2,7 @@ import { exec } from 'child_process';
 
 interface Options {
   stdin?: string;
+  verbose?: boolean;
 }
 
 export default function run(
@@ -9,7 +10,7 @@ export default function run(
   options: Options = {}
 ): Promise<string> {
   return new Promise((resolve, reject) => {
-    const process = exec(command, (error, stdout) => {
+    const subprocess = exec(command, (error, stdout) => {
       if (error != null) {
         reject(error);
       } else {
@@ -17,9 +18,13 @@ export default function run(
       }
     });
 
+    if (options.verbose) {
+      subprocess.stdout?.pipe(process.stdout);
+    }
+
     if (options.stdin != null) {
-      process.stdin?.write(options.stdin);
-      process.stdin?.end();
+      subprocess.stdin?.write(options.stdin);
+      subprocess.stdin?.end();
     }
   });
 }
