@@ -29,7 +29,7 @@ export default class CompositeImage {
         new DependencyImage({
           index: index++,
           name: 'node',
-          tag: options.nodeVersion,
+          version: options.nodeVersion,
           verbose: options.verbose
         })
       );
@@ -40,7 +40,7 @@ export default class CompositeImage {
         new DependencyImage({
           index: index++,
           name: 'python',
-          tag: options.pythonVersion,
+          version: options.pythonVersion,
           verbose: options.verbose
         })
       );
@@ -51,7 +51,7 @@ export default class CompositeImage {
         new DependencyImage({
           index: index++,
           name: 'ruby',
-          tag: options.rubyVersion,
+          version: options.rubyVersion,
           verbose: options.verbose
         })
       );
@@ -71,7 +71,7 @@ export default class CompositeImage {
   get tag() {
     const parts: string[] = [
       this.version,
-      ...this.images.map((image) => image.tag)
+      ...this.images.map((image) => image.version)
     ];
 
     return parts.join('-');

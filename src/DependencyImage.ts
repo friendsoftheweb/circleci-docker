@@ -1,19 +1,20 @@
 import path from 'path';
 
 import { IMAGE_NAME_PREFIX, IMAGE_BIN_PATHS } from './constants';
+import getPackageVersion from './util/getPackageVersion';
 import run from './util/run';
 
 interface Options {
   index: number;
   name: string;
-  tag: string;
+  version: string;
   verbose?: boolean;
 }
 
 export default class DependencyImage {
   readonly index: number;
   readonly name: string;
-  readonly tag: string;
+  readonly version: string;
   readonly verbose: boolean;
 
   constructor(options: Options) {
@@ -21,14 +22,18 @@ export default class DependencyImage {
       throw new Error(`Invalid dependency image name: ${options.name}`);
     }
 
-    if (/[^\d\.]/.test(options.tag)) {
-      throw new Error(`Invalid dependency image tag: ${options.tag}`);
+    if (/[^\d\.]/.test(options.version)) {
+      throw new Error(`Invalid dependency image version: ${options.version}`);
     }
 
     this.index = options.index;
     this.name = options.name;
-    this.tag = options.tag;
+    this.version = options.version;
     this.verbose = Boolean(options.verbose);
+  }
+
+  get tag() {
+    return `${getPackageVersion()}-${this.version}`;
   }
 
   get dockerfileFromStatement() {
@@ -42,7 +47,7 @@ export default class DependencyImage {
   }
 
   get dockerBuildArg() {
-    return `--build-arg ${this.name}_version=${this.tag}`;
+    return `--build-arg ${this.name}_version=${this.version}`;
   }
 
   async build() {

@@ -33,3 +33,7 @@ RUN wget -O ruby-install-0.7.0.tar.gz https://github.com/postmodern/ruby-install
     && make install \
     && ruby-install --system ruby $RUBY_VERSION \
     && rm -rf /ruby-install-0.7.0 /ruby-install-0.7.0.tar.gz
+
+RUN gem install bundler --version '~> 1.17'
+
+RUN gem install bundler --version '~> 2.1'

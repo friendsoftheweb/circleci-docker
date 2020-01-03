@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
     net-tools \
     openssh-client \
     parallel \
+    postgresql-client \
     sudo \
     tar \
     unzip \
