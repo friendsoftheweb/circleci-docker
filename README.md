@@ -15,7 +15,7 @@ $ yarn add --dev @ftw/circleci-docker
 Make sure [Docker Desktop](https://www.docker.com/products/docker-desktop) is installed and running first.
 
 ```
-$ yarn run circleci-docker build --org friendsoftheweb
+$ yarn run circleci-docker build friendsoftheweb
 ```
 
 This will automatically detect the required versions of Ruby, Node, and Python (from `.ruby-version`, `.nvmrc`, and `runtime.txt` files) and start building Docker images.
@@ -23,7 +23,7 @@ This will automatically detect the required versions of Ruby, Node, and Python (
 To see all the output from the Docker build process, run the `build` command with the `--verbose` flag:
 
 ```
-$ yarn run circleci-docker build --verbose --org friendsoftheweb
+$ yarn run circleci-docker build --verbose friendsoftheweb
 ```
 
 ## Updating the CircleCI Configuration
