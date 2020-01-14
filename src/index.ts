@@ -13,10 +13,10 @@ import CompositeImage from './CompositeImage';
 program.version(require('../package.json')['version']);
 
 program
-  .command('build')
+  .command('build <organization>')
   .description('creates a new composite Docker image')
   .option('--verbose', 'display output from Docker build process', false)
-  .action((options: { verbose: boolean }) => {
+  .action((org: string, options: { verbose: boolean }) => {
     const version = getPackageVersion();
     const nodeVersion = getNodeVersion();
     const pythonVersion = getPythonVersion();
@@ -43,7 +43,8 @@ program
       nodeVersion,
       pythonVersion,
       rubyVersion,
-      verbose: options.verbose
+      verbose: options.verbose,
+      organization: org
     }).build();
   });
 
