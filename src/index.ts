@@ -16,7 +16,10 @@ program
   .command('build')
   .description('creates a new composite Docker image')
   .option('--verbose', 'display output from Docker build process', false)
-  .option('-o, --org <organization>', 'the Docker organization to upload to')
+  .requiredOption(
+    '-o, --org <organization>',
+    'the Docker organization to upload to'
+  )
   .action((options: { verbose: boolean; org: string }) => {
     const version = getPackageVersion();
     const nodeVersion = getNodeVersion();
