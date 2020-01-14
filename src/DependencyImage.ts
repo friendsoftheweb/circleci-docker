@@ -1,6 +1,6 @@
 import path from 'path';
 
-import { IMAGE_NAME_PREFIX, IMAGE_BIN_PATHS } from './constants';
+import { IMAGE_BIN_PATHS } from './constants';
 import getPackageVersion from './util/getPackageVersion';
 import run from './util/run';
 
@@ -9,6 +9,7 @@ interface Options {
   name: string;
   version: string;
   verbose?: boolean;
+  organization: string;
 }
 
 export default class DependencyImage {
@@ -16,6 +17,7 @@ export default class DependencyImage {
   readonly name: string;
   readonly version: string;
   readonly verbose: boolean;
+  readonly organization: string;
 
   constructor(options: Options) {
     if (/[^a-z]/.test(options.name)) {
@@ -30,6 +32,7 @@ export default class DependencyImage {
     this.name = options.name;
     this.version = options.version;
     this.verbose = Boolean(options.verbose);
+    this.organization = options.organization;
   }
 
   get tag() {
@@ -37,7 +40,7 @@ export default class DependencyImage {
   }
 
   get dockerfileFromStatement() {
-    return `FROM ${IMAGE_NAME_PREFIX}-${this.name}:${this.tag}`;
+    return `FROM ${this.organization}/circleci-${this.name}:${this.tag}`;
   }
 
   get dockerfileCopyStatements() {
@@ -51,7 +54,7 @@ export default class DependencyImage {
   }
 
   async build() {
-    const imageName = `${IMAGE_NAME_PREFIX}-${this.name}:${this.tag}`;
+    const imageName = `${this.organization}/circleci-${this.name}:${this.tag}`;
 
     const dockerfileDirectoryPath = path.resolve(
       __dirname,

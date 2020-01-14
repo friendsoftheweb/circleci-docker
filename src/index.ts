@@ -16,7 +16,8 @@ program
   .command('build')
   .description('creates a new composite Docker image')
   .option('--verbose', 'display output from Docker build process', false)
-  .action((options: { verbose: boolean }) => {
+  .option('-o, --org <organization>', 'the Docker organization to upload to')
+  .action((options: { verbose: boolean; org: string }) => {
     const version = getPackageVersion();
     const nodeVersion = getNodeVersion();
     const pythonVersion = getPythonVersion();
@@ -43,7 +44,8 @@ program
       nodeVersion,
       pythonVersion,
       rubyVersion,
-      verbose: options.verbose
+      verbose: options.verbose,
+      organization: options.org
     }).build();
   });
 

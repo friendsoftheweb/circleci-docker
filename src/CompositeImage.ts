@@ -3,7 +3,6 @@ import { readFileSync } from 'fs';
 import chalk from 'chalk';
 import ora from 'ora';
 
-import { IMAGE_NAME_PREFIX } from './constants';
 import run from './util/run';
 import DependencyImage from './DependencyImage';
 
@@ -13,12 +12,14 @@ interface Options {
   pythonVersion?: string | null;
   rubyVersion?: string | null;
   verbose?: boolean;
+  organization: string;
 }
 
 export default class CompositeImage {
   readonly version: string;
   readonly verbose: boolean;
   readonly images: DependencyImage[];
+  readonly organization: string;
 
   constructor(options: Options) {
     const images: DependencyImage[] = [];
@@ -30,7 +31,8 @@ export default class CompositeImage {
           index: index++,
           name: 'node',
           version: options.nodeVersion,
-          verbose: options.verbose
+          verbose: options.verbose,
+          organization: options.organization
         })
       );
     }
@@ -41,7 +43,8 @@ export default class CompositeImage {
           index: index++,
           name: 'python',
           version: options.pythonVersion,
-          verbose: options.verbose
+          verbose: options.verbose,
+          organization: options.organization
         })
       );
     }
@@ -52,7 +55,8 @@ export default class CompositeImage {
           index: index++,
           name: 'ruby',
           version: options.rubyVersion,
-          verbose: options.verbose
+          verbose: options.verbose,
+          organization: options.organization
         })
       );
     }
@@ -60,12 +64,13 @@ export default class CompositeImage {
     this.version = options.version;
     this.verbose = Boolean(options.verbose);
     this.images = images;
+    this.organization = options.organization;
   }
 
   get name() {
     const parts: string[] = this.images.map((image) => image.name);
 
-    return `${IMAGE_NAME_PREFIX}-${parts.join('-')}`;
+    return `${this.organization}/circleci-${parts.join('-')}`;
   }
 
   get tag() {
