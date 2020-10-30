@@ -8,18 +8,20 @@ import DependencyImage from './DependencyImage';
 
 interface Options {
   version: string;
+  organization: string;
   nodeVersion?: string | null;
   pythonVersion?: string | null;
   rubyVersion?: string | null;
   verbose?: boolean;
-  organization: string;
+  noCache?: boolean;
 }
 
 export default class CompositeImage {
   readonly version: string;
-  readonly verbose: boolean;
   readonly images: DependencyImage[];
   readonly organization: string;
+  readonly verbose: boolean;
+  readonly noCache: boolean;
 
   constructor(options: Options) {
     const images: DependencyImage[] = [];
@@ -31,8 +33,9 @@ export default class CompositeImage {
           index: index++,
           name: 'node',
           version: options.nodeVersion,
+          organization: options.organization,
           verbose: options.verbose,
-          organization: options.organization
+          noCache: options.noCache,
         })
       );
     }
@@ -43,8 +46,9 @@ export default class CompositeImage {
           index: index++,
           name: 'python',
           version: options.pythonVersion,
+          organization: options.organization,
           verbose: options.verbose,
-          organization: options.organization
+          noCache: options.noCache,
         })
       );
     }
@@ -55,16 +59,18 @@ export default class CompositeImage {
           index: index++,
           name: 'ruby',
           version: options.rubyVersion,
+          organization: options.organization,
           verbose: options.verbose,
-          organization: options.organization
+          noCache: options.noCache,
         })
       );
     }
 
     this.version = options.version;
-    this.verbose = Boolean(options.verbose);
     this.images = images;
     this.organization = options.organization;
+    this.verbose = Boolean(options.verbose);
+    this.noCache = Boolean(options.noCache);
   }
 
   get name() {
@@ -76,7 +82,7 @@ export default class CompositeImage {
   get tag() {
     const parts: string[] = [
       this.version,
-      ...this.images.map((image) => image.version)
+      ...this.images.map((image) => image.version),
     ];
 
     return parts.join('-');
@@ -142,10 +148,15 @@ export default class CompositeImage {
     }
 
     try {
-      await run(`docker build -t ${imageNameAndTag} ${dockerBuildArgs} -`, {
-        stdin: this.toDockerfileString(),
-        verbose: this.verbose
-      });
+      await run(
+        `docker build -t ${imageNameAndTag} ${
+          this.noCache ? '--no-cache' : ''
+        } ${dockerBuildArgs} -`.replace(/\s+/g, ' '),
+        {
+          stdin: this.toDockerfileString(),
+          verbose: this.verbose,
+        }
+      );
 
       await run(`docker push ${imageNameAndTag}`, { verbose: this.verbose });
 

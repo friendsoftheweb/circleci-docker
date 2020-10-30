@@ -10,6 +10,10 @@ export default function run(
   options: Options = {}
 ): Promise<string> {
   return new Promise((resolve, reject) => {
+    if (options.verbose) {
+      console.log(`Running command: ${command}\n`);
+    }
+
     const subprocess = exec(command, (error, stdout) => {
       if (error != null) {
         reject(error);

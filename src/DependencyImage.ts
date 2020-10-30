@@ -8,16 +8,18 @@ interface Options {
   index: number;
   name: string;
   version: string;
-  verbose?: boolean;
   organization: string;
+  verbose?: boolean;
+  noCache?: boolean;
 }
 
 export default class DependencyImage {
   readonly index: number;
   readonly name: string;
   readonly version: string;
-  readonly verbose: boolean;
   readonly organization: string;
+  readonly verbose: boolean;
+  readonly noCache: boolean;
 
   constructor(options: Options) {
     if (/[^a-z]/.test(options.name)) {
@@ -31,8 +33,9 @@ export default class DependencyImage {
     this.index = options.index;
     this.name = options.name;
     this.version = options.version;
-    this.verbose = Boolean(options.verbose);
     this.organization = options.organization;
+    this.verbose = Boolean(options.verbose);
+    this.noCache = Boolean(options.noCache);
   }
 
   get tag() {
@@ -62,7 +65,9 @@ export default class DependencyImage {
     );
 
     await run(
-      `docker build -t ${imageName} ${this.dockerBuildArg} ${dockerfileDirectoryPath}`,
+      `docker build -t ${imageName} ${this.dockerBuildArg} ${
+        this.noCache ? '--no-cache' : ''
+      } ${dockerfileDirectoryPath}`.replace(/\s+/g, ' '),
       { verbose: this.verbose }
     );
 

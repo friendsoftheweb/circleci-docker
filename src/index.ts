@@ -16,36 +16,42 @@ program
   .command('build <organization>')
   .description('creates a new composite Docker image')
   .option('--verbose', 'display output from Docker build process', false)
-  .action((org: string, options: { verbose: boolean }) => {
-    const version = getPackageVersion();
-    const nodeVersion = getNodeVersion();
-    const pythonVersion = getPythonVersion();
-    const rubyVersion = getRubyVersion();
+  .option('--noCache', 'skip using the docker build cache', false)
+  .action(
+    (organization: string, options: { verbose: boolean; noCache: false }) => {
+      const version = getPackageVersion();
+      const nodeVersion = getNodeVersion();
+      const pythonVersion = getPythonVersion();
+      const rubyVersion = getRubyVersion();
 
-    console.log('Using the following versions:\n');
+      console.log('Using the following versions:\n');
 
-    if (nodeVersion != null) {
-      console.log(`Node:\t${chalk.cyan(nodeVersion)}`);
+      if (nodeVersion != null) {
+        console.log(`Node:\t${chalk.cyan(nodeVersion)}`);
+      }
+
+      if (pythonVersion != null) {
+        console.log(`Python:\t${chalk.cyan(pythonVersion)}`);
+      }
+
+      if (rubyVersion != null) {
+        console.log(`Ruby:\t${chalk.cyan(rubyVersion)}`);
+      }
+
+      console.log(
+        '\nBuilding the Docker images could take up to 30 minutes.\n'
+      );
+
+      new CompositeImage({
+        version,
+        nodeVersion,
+        pythonVersion,
+        rubyVersion,
+        organization,
+        verbose: options.verbose,
+        noCache: options.noCache,
+      }).build();
     }
-
-    if (pythonVersion != null) {
-      console.log(`Python:\t${chalk.cyan(pythonVersion)}`);
-    }
-
-    if (rubyVersion != null) {
-      console.log(`Ruby:\t${chalk.cyan(rubyVersion)}`);
-    }
-
-    console.log('\nBuilding the Docker images could take up to 30 minutes.\n');
-
-    new CompositeImage({
-      version,
-      nodeVersion,
-      pythonVersion,
-      rubyVersion,
-      verbose: options.verbose,
-      organization: org
-    }).build();
-  });
+  );
 
 program.parse(process.argv);
