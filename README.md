@@ -26,6 +26,14 @@ To see all the output from the Docker build process, run the `build` command wit
 $ yarn run circleci-docker build --verbose friendsoftheweb
 ```
 
+If you encounter issues during the build process, try running it again with the `--noCache` flag:
+
+```
+$ yarn run circleci-docker build --noCache friendsoftheweb
+```
+
+Because Docker caches layers based on the content of the command that created them, some commands (such as `apt-get update`) won't be run again if a cached layer exists. Building with the `--noCache` flag will cause Docker to ignore any previously cached build layers and start from scratch, ensuring that the latest version of each dependency is installed.
+
 ## Updating the CircleCI Configuration
 
 Once the Docker image has been generated, you'll need to update the CircleCI configuration for the project. Here's an example of the build configuration for a project that needs Ruby, Node, Python, and PostgreSQL (not included in the generated image):
